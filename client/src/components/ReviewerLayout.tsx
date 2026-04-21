@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryClient, qk } from "@/lib/queryClient";
 import { listNotifications, signOut } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
-import { Bell, LayoutGrid, Briefcase, Wallet, User as UserIcon, LogOut } from "lucide-react";
+import { Bell, LayoutGrid, Briefcase, Wallet, User as UserIcon, LogOut, Home, Compass, MessageCircle } from "lucide-react";
 import type { Notification } from "@shared/schema";
 
 export function ReviewerLayout({ children, title }: { children: ReactNode; title?: string }) {
@@ -76,6 +76,12 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
     { href: "/notifications", label: "Notifications", mobileLabel: "Alerts", icon: Bell },
     { href: "/profile", label: "Profile", mobileLabel: "Profile", icon: UserIcon },
   ];
+  const mobileNav = [
+    { href: "/applications", label: "Home", icon: Home },
+    { href: "/campaigns", label: "Discover", icon: Compass },
+    { href: "/notifications", label: "Messages", icon: MessageCircle },
+    { href: "/wallet", label: "Wallet", icon: Wallet },
+  ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -122,11 +128,27 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border bg-background/80 backdrop-blur sticky top-0 z-30 flex items-center px-3 md:px-6 gap-2">
-          <div className="md:hidden"><Logo showWordmark={false} size={26} /></div>
-          {title && <h1 className="text-sm md:text-base font-semibold flex-1 ml-2 md:ml-0 truncate" data-testid="text-page-title">{title}</h1>}
-          <div className="flex-1 md:hidden" />
-          <ThemeToggle />
+          <div className="md:hidden flex items-center gap-2 min-w-0 flex-1">
+            <div className="relative">
+              <Avatar className="h-8 w-8 border border-border">
+                {user?.avatar_url ? <AvatarImage src={user.avatar_url} /> : null}
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                  {user?.name?.[0] ?? "U"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+            </div>
+            <h1 className="text-base font-bold truncate" data-testid="text-page-title">
+              {title ?? "Discover"}
+            </h1>
+          </div>
+          <div className="hidden md:flex items-center gap-2 flex-1">
+            {title && <h1 className="text-sm md:text-base font-semibold truncate" data-testid="text-page-title">{title}</h1>}
+          </div>
           <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
+          <div>
             <Link href="/notifications">
               <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
                 <Bell className="h-4 w-4" />
@@ -151,6 +173,8 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{user?.name}</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setLocation("/campaigns")} data-testid="menu-campaigns">Discover</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLocation("/applications")} data-testid="menu-applications">My Applications</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setLocation("/profile")} data-testid="menu-profile">Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setLocation("/wallet")} data-testid="menu-wallet">Wallet</DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -165,8 +189,8 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
 
       <nav className="md:hidden fixed inset-x-0 bottom-0 z-40 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="mobile-glass rounded-2xl px-2 py-1.5">
-          <div className="grid grid-cols-5 gap-1">
-            {nav.map((item) => {
+          <div className="grid grid-cols-4 gap-1">
+            {mobileNav.map((item) => {
               const active = location.startsWith(item.href);
               const Icon = item.icon;
               return (
@@ -176,10 +200,10 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
                   className={`relative flex flex-col items-center justify-center rounded-xl px-1 py-2 text-[11px] transition-colors ${
                     active ? "text-primary bg-primary/10" : "text-muted-foreground"
                   }`}
-                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(/ /g, "-")}`}
+                  data-testid={`mobile-nav-${item.label.toLowerCase()}`}
                 >
                   <Icon className="h-[18px] w-[18px] mb-1" />
-                  <span className="leading-none">{item.mobileLabel}</span>
+                  <span className="leading-none">{item.label}</span>
                   {item.href === "/notifications" && unread > 0 && (
                     <Badge className="absolute top-1 right-3 h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
                       {unread > 9 ? "9+" : unread}
