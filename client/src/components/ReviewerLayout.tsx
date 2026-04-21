@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
@@ -9,19 +9,17 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient, qk } from "@/lib/queryClient";
 import { listNotifications, signOut } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
-import { Bell, LayoutGrid, Briefcase, Wallet, User as UserIcon, Menu, LogOut } from "lucide-react";
+import { Bell, LayoutGrid, Briefcase, Wallet, User as UserIcon, LogOut } from "lucide-react";
 import type { Notification } from "@shared/schema";
 
 export function ReviewerLayout({ children, title }: { children: ReactNode; title?: string }) {
   const user = useSession();
   const [location, setLocation] = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (title) document.title = `${title} — ReviewHive`;
@@ -72,17 +70,17 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
   }
 
   const nav = [
-    { href: "/campaigns", label: "Campaigns", icon: LayoutGrid },
-    { href: "/applications", label: "My Applications", icon: Briefcase },
-    { href: "/wallet", label: "Wallet", icon: Wallet },
-    { href: "/profile", label: "Profile", icon: UserIcon },
-    { href: "/notifications", label: "Notifications", icon: Bell },
+    { href: "/campaigns", label: "Campaigns", mobileLabel: "Campaigns", icon: LayoutGrid },
+    { href: "/applications", label: "My Applications", mobileLabel: "Apps", icon: Briefcase },
+    { href: "/wallet", label: "Wallet", mobileLabel: "Wallet", icon: Wallet },
+    { href: "/notifications", label: "Notifications", mobileLabel: "Alerts", icon: Bell },
+    { href: "/profile", label: "Profile", mobileLabel: "Profile", icon: UserIcon },
   ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-sidebar-border">
-        <Link href="/campaigns" onClick={() => setMobileOpen(false)}>
+        <Link href="/campaigns">
           <Logo />
         </Link>
       </div>
@@ -94,7 +92,6 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm hover-elevate ${
                 active ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground"
               }`}
@@ -116,7 +113,7 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
   );
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background mobile-app-shell">
       {/* Sidebar - desktop */}
       <aside className="hidden md:flex w-60 border-r border-sidebar-border bg-sidebar flex-col">
         {sidebarContent}
@@ -125,28 +122,20 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border bg-background/80 backdrop-blur sticky top-0 z-30 flex items-center px-3 md:px-6 gap-2">
-          <div className="md:hidden">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64">{sidebarContent}</SheetContent>
-            </Sheet>
-          </div>
-          <div className="md:hidden"><Logo showWordmark={false} size={28} /></div>
-          {title && <h1 className="text-sm md:text-base font-semibold flex-1 ml-2 truncate" data-testid="text-page-title">{title}</h1>}
+          <div className="md:hidden"><Logo showWordmark={false} size={26} /></div>
+          {title && <h1 className="text-sm md:text-base font-semibold flex-1 ml-2 md:ml-0 truncate" data-testid="text-page-title">{title}</h1>}
           <div className="flex-1 md:hidden" />
           <ThemeToggle />
-          <Link href="/notifications">
-            <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
-              <Bell className="h-4 w-4" />
-              {unread > 0 && (
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-              )}
-            </Button>
-          </Link>
+          <div className="hidden md:block">
+            <Link href="/notifications">
+              <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
+                <Bell className="h-4 w-4" />
+                {unread > 0 && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+                )}
+              </Button>
+            </Link>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 px-2 h-9" data-testid="button-user-menu">
@@ -171,8 +160,37 @@ export function ReviewerLayout({ children, title }: { children: ReactNode; title
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0 pb-24 md:pb-0">{children}</main>
       </div>
+
+      <nav className="md:hidden fixed inset-x-0 bottom-0 z-40 px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="mobile-glass rounded-2xl px-2 py-1.5">
+          <div className="grid grid-cols-5 gap-1">
+            {nav.map((item) => {
+              const active = location.startsWith(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative flex flex-col items-center justify-center rounded-xl px-1 py-2 text-[11px] transition-colors ${
+                    active ? "text-primary bg-primary/10" : "text-muted-foreground"
+                  }`}
+                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(/ /g, "-")}`}
+                >
+                  <Icon className="h-[18px] w-[18px] mb-1" />
+                  <span className="leading-none">{item.mobileLabel}</span>
+                  {item.href === "/notifications" && unread > 0 && (
+                    <Badge className="absolute top-1 right-3 h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
+                      {unread > 9 ? "9+" : unread}
+                    </Badge>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
     </div>
   );
 }
