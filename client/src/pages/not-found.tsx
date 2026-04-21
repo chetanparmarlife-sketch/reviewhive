@@ -1,7 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { useEffect } from "react";
 
 export default function NotFound() {
+  useEffect(() => {
+    const raw = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
+    const normalized = raw.replace(/^\/+/, "").replace(/^\?+/, "");
+    const looksLikeAuthCallback =
+      normalized.startsWith("access_token=") ||
+      normalized.startsWith("refresh_token=") ||
+      normalized.startsWith("error=") ||
+      normalized.startsWith("type=") ||
+      normalized.includes("error_code=") ||
+      normalized.includes("sb=");
+
+    if (looksLikeAuthCallback) {
+      window.location.hash = "#/login";
+    }
+  }, []);
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md mx-4">
