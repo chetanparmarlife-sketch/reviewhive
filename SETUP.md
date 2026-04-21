@@ -124,7 +124,8 @@ npm run build
 
 Static output lives in `dist/public`. Ship it anywhere:
 
-- **Vercel / Netlify**: point to `dist/public` as the publish directory
+- **Vercel**: `vercel.json` already sets `outputDirectory` to `dist/public`
+- **Netlify**: point to `dist/public` as the publish directory
 - **S3 + CloudFront**: sync `dist/public/*` to your bucket
 - **Cloudflare Pages**: upload `dist/public`
 
