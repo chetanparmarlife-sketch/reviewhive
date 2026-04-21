@@ -18,7 +18,7 @@ export function SetupBanner() {
           <strong>Supabase not configured.</strong>{" "}
           Set <code className="rounded bg-amber-100 px-1 py-0.5 dark:bg-amber-900">VITE_SUPABASE_URL</code> and{" "}
           <code className="rounded bg-amber-100 px-1 py-0.5 dark:bg-amber-900">VITE_SUPABASE_ANON_KEY</code>{" "}
-          in <code>.env.local</code>, then restart. See{" "}
+          in <code>.env</code> or <code>.env.local</code>, then restart. See{" "}
           <strong>SETUP.md</strong> for the full guide.
         </span>
       </div>

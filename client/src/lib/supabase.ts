@@ -17,7 +17,35 @@ const RAW_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 function isPlaceholder(v: string | undefined): boolean {
   if (!v) return true;
-  return /^REPLACE_ME/i.test(v) || v === "" || v === "undefined";
+  const value = v.trim();
+  if (!value) return true;
+  return (
+    /^REPLACE_ME/i.test(value) ||
+    value === "undefined" ||
+    /YOUR_PROJECT_REF/i.test(value) ||
+    /placeholder/i.test(value) ||
+    value.includes("...") ||
+    /\(.*\)/.test(value)
+  );
+}
+
+function looksLikeSupabaseUrl(v: string | undefined): boolean {
+  if (isPlaceholder(v)) return false;
+  try {
+    const url = new URL((v as string).trim());
+    const isHttp = url.protocol === "http:" || url.protocol === "https:";
+    return isHttp && !!url.hostname;
+  } catch {
+    return false;
+  }
+}
+
+function looksLikeSupabaseAnonKey(v: string | undefined): boolean {
+  if (isPlaceholder(v)) return false;
+  const value = (v as string).trim();
+  // Supabase supports JWT-style anon keys and publishable keys.
+  if (value.startsWith("sb_publishable_")) return true;
+  return /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/.test(value);
 }
 
 export const SUPABASE_URL = isPlaceholder(RAW_URL)
@@ -28,7 +56,7 @@ export const SUPABASE_ANON_KEY = isPlaceholder(RAW_ANON)
   : (RAW_ANON as string);
 
 export function isSupabaseConfigured(): boolean {
-  return !isPlaceholder(RAW_URL) && !isPlaceholder(RAW_ANON);
+  return looksLikeSupabaseUrl(RAW_URL) && looksLikeSupabaseAnonKey(RAW_ANON);
 }
 
 // --- In-memory storage adapter -------------------------------------------

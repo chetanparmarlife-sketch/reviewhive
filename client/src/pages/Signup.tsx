@@ -32,6 +32,7 @@ export default function Signup() {
       const { user, session } = await emailSignUp({
         email: form.email, password: form.password,
         name: form.name, phone: form.phone,
+        emailRedirectTo: `${window.location.origin}/#/login`,
       });
       if (!user) throw new Error("Signup failed");
       // If email confirmations are on in Supabase, session is null and the user

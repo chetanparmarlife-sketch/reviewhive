@@ -2,7 +2,7 @@
 // UI performs goes through one of these functions. Keeps pages concise and
 // lets us swap storage implementations without touching views.
 
-import { supabase } from "./supabase";
+import { isSupabaseConfigured, supabase } from "./supabase";
 import type {
   Profile, Brand, Campaign, Product, Application,
   Notification, ApplicationStatus, CampaignStatus,
@@ -13,6 +13,13 @@ function unwrap<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
   if (data === null) throw new Error("No data returned");
   return data;
+}
+
+function assertSupabaseConfigured(): void {
+  if (isSupabaseConfigured()) return;
+  throw new Error(
+    "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or .env.local, then restart the app.",
+  );
 }
 
 // ==================== PROFILES ====================
@@ -284,23 +291,35 @@ export async function fetchAdminStats(): Promise<StatsResponse> {
 }
 
 // ==================== AUTH helpers ====================
-export async function emailSignUp(args: { email: string; password: string; name: string; phone?: string }) {
+export async function emailSignUp(args: {
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+  emailRedirectTo?: string;
+}) {
+  assertSupabaseConfigured();
   const { data, error } = await supabase.auth.signUp({
     email: args.email,
     password: args.password,
-    options: { data: { name: args.name, phone: args.phone ?? null } },
+    options: {
+      emailRedirectTo: args.emailRedirectTo,
+      data: { name: args.name, phone: args.phone ?? null },
+    },
   });
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function emailSignIn(email: string, password: string) {
+  assertSupabaseConfigured();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function sendPhoneOtp(phone: string) {
+  assertSupabaseConfigured();
   const { error } = await supabase.auth.signInWithOtp({
     phone,
     options: {
@@ -313,6 +332,7 @@ export async function sendPhoneOtp(phone: string) {
 }
 
 export async function verifyPhoneOtp(phone: string, token: string) {
+  assertSupabaseConfigured();
   const { data, error } = await supabase.auth.verifyOtp({
     phone, token, type: "sms" as any,
   });
