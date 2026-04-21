@@ -30,8 +30,9 @@ const REWARD_TIERS = [
 export default function Campaigns() {
   const user = useSession();
   const { data: campaigns = [], isLoading } = useQuery<Campaign[]>({
-    queryKey: qk.campaigns,
+    queryKey: qk.reviewerCampaigns(user?.id),
     queryFn: listCampaignsWithBrand,
+    enabled: !!user,
   });
   const { data: myApps = [] } = useQuery<Application[]>({
     queryKey: qk.applicationsForUser(user?.id),

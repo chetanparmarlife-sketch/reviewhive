@@ -28,8 +28,9 @@ export default function MyApplications() {
     enabled: !!user,
   });
   const { data: campaigns = [] } = useQuery<Campaign[]>({
-    queryKey: qk.campaigns,
+    queryKey: qk.reviewerCampaigns(user?.id),
     queryFn: listCampaignsWithBrand,
+    enabled: !!user,
   });
 
   const appsEnriched: AppWithCampaign[] = apps.map(a => ({ ...a, campaign: campaigns.find(c => c.id === a.campaign_id) }))

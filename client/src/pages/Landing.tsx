@@ -15,7 +15,7 @@ import type { Campaign } from "@shared/schema";
 export default function Landing() {
   useEffect(() => { document.title = "ReviewHive — Honest reviews for Indian marketplaces"; }, []);
   const { data: campaigns = [] } = useQuery<Campaign[]>({
-    queryKey: qk.campaigns,
+    queryKey: qk.publicCampaigns,
     queryFn: listCampaignsWithBrand,
   });
   const featured = campaigns.filter(c => c.status === "live").slice(0, 3);

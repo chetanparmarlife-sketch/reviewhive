@@ -19,7 +19,9 @@ export const queryClient = new QueryClient({
 
 // Re-export query key helpers so pages don't hardcode magic strings.
 export const qk = {
+  publicCampaigns: ["public-campaigns"] as const,
   campaigns: ["campaigns"] as const,
+  reviewerCampaigns: (userId: string | undefined) => ["campaigns", "reviewer", userId ?? ""] as const,
   campaign: (id: string) => ["campaign", id] as const,
   brands: ["brands"] as const,
   reviewers: ["reviewers"] as const,

@@ -22,8 +22,9 @@ export default function Profile() {
     enabled: !!user,
   });
   const { data: campaigns = [] } = useQuery<Campaign[]>({
-    queryKey: qk.campaigns,
+    queryKey: qk.reviewerCampaigns(user?.id),
     queryFn: listCampaignsWithBrand,
+    enabled: !!user,
   });
 
   const u = fullUser ?? user;

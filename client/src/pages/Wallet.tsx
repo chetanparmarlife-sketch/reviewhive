@@ -23,8 +23,9 @@ export default function Wallet() {
     enabled: !!user,
   });
   const { data: campaigns = [] } = useQuery<Campaign[]>({
-    queryKey: qk.campaigns,
+    queryKey: qk.reviewerCampaigns(user?.id),
     queryFn: listCampaignsWithBrand,
+    enabled: !!user,
   });
   const { data: fullUser } = useQuery<Profile | null>({
     queryKey: qk.profile(user?.id),
