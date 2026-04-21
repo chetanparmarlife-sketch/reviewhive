@@ -13,7 +13,7 @@ max_rows = 1000
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+major_version = 17
 
 [studio]
 port = 54323
@@ -23,14 +23,18 @@ file_size_limit = "50MiB"
 
 [auth]
 enable_signup = true
-enable_confirmations = false   # flip to true in production
-site_url = "http://localhost:5000"
-additional_redirect_urls = ["http://localhost:5000"]
+site_url = "https://reviewhive-mu.vercel.app"
+additional_redirect_urls = [
+  "https://reviewhive-mu.vercel.app/*",
+  "https://reviewhive-mu.vercel.app/#/login",
+  "http://localhost:5000/*",
+  "http://localhost:3000/*",
+]
 
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false
+enable_confirmations = true
 
 [auth.sms]
 enable_signup = true
