@@ -15,7 +15,17 @@ import { Loader2, Mail, Smartphone } from "lucide-react";
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  useEffect(() => { document.title = "Log in — ReviewHive"; }, []);
+  useEffect(() => {
+    document.title = "Log in — ReviewHive";
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("auth_error");
+    if (authError) {
+      toast({ title: "Email confirmation failed", description: authError, variant: "destructive" });
+      params.delete("auth_error");
+      const search = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`);
+    }
+  }, [toast]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loadingEmail, setLoadingEmail] = useState(false);
