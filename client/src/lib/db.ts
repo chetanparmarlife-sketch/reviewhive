@@ -22,6 +22,10 @@ function assertSupabaseConfigured(): void {
   );
 }
 
+function isEmailVerified(user: { email_confirmed_at?: string | null } | null | undefined): boolean {
+  return !!user?.email_confirmed_at;
+}
+
 // ==================== PROFILES ====================
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
@@ -308,6 +312,11 @@ export async function emailSignUp(args: {
     },
   });
   if (error) throw new Error(error.message);
+  // Enforce verify-before-login regardless of project-level auth setting.
+  if (!isEmailVerified(data.user)) {
+    if (data.session) await supabase.auth.signOut();
+    return { ...data, session: null };
+  }
   return data;
 }
 
@@ -315,6 +324,10 @@ export async function emailSignIn(email: string, password: string) {
   assertSupabaseConfigured();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
+  if (!isEmailVerified(data.user)) {
+    await supabase.auth.signOut();
+    throw new Error("Please verify your email before logging in.");
+  }
   return data;
 }
 
